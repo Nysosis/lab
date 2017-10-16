@@ -118,6 +118,35 @@ describe('Coverage', () => {
         done();
     });
 
+    it('identifies lines with partial coverage when having external sourcemap with no sourcesContent', (done) => {
+
+        const Test = require('./coverage/sourcemaps-external-no-sources-content');
+        Test.method(false);
+
+        const cov = Lab.coverage.analyze({ coveragePath: Path.join(__dirname, 'coverage/sourcemaps-external-no-sources-content'), sourcemaps: true });
+
+        const source = cov.files[0].source;
+        const missedLines = [];
+        Object.keys(source).forEach((lineNumber) => {
+
+            const line = source[lineNumber];
+            if (line.miss) {
+                missedLines.push({
+                    filename: line.originalFilename,
+                    lineNumber,
+                    originalLineNumber: line.originalLine
+                });
+            }
+        });
+
+        expect(missedLines).to.include([
+            { filename: 'while.js', lineNumber: '4', originalLineNumber: 13 },
+            { filename: 'while.js', lineNumber: '5', originalLineNumber: 14 }
+        ]);
+
+        done();
+    });
+
     it('identifies lines with partial coverage when having inline sourcemap', (done) => {
 
         const Test = require('./coverage/sourcemaps-inline');
